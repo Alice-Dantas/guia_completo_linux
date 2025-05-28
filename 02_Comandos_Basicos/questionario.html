@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interativo de Comandos Linux</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f9fafb; /* gray-50 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+        }
+        .question-text {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 1.5rem; /* mb-6 */
+            color: #1f2937; /* gray-800 */
+        }
+        .option-label {
+            display: block;
+            padding: 0.75rem 1rem; /* p-3 px-4 */
+            margin-bottom: 0.75rem; /* mb-3 */
+            background-color: #ffffff; /* white */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .option-label:hover {
+            background-color: #eff6ff; /* blue-50 */
+            border-color: #3b82f6; /* blue-500 */
+        }
+        .option-input:checked + .option-label {
+            background-color: #dbeafe; /* blue-100 */
+            border-color: #2563eb; /* blue-600 */
+            font-weight: 500; /* font-medium */
+        }
+        .feedback-correct {
+            color: #16a34a; /* green-600 */
+            font-weight: 500;
+        }
+        .feedback-incorrect {
+            color: #dc2626; /* red-600 */
+            font-weight: 500;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e5e7eb; /* gray-200 */
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-bottom: 1rem; /* mb-4 */
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 1.25rem; /* h-5 */
+            background-color: #3b82f6; /* blue-500 */
+            border-radius: 0.5rem; /* rounded-lg */
+            text-align: center;
+            color: white;
+            line-height: 1.25rem; /* leading-5 */
+            transition: width 0.3s ease-in-out;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600; /* font-semibold */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+        .btn-secondary {
+            background-color: #6b7280; /* gray-500 */
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563; /* gray-600 */
+        }
+        .results-container {
+            text-align: center;
+        }
+        .results-title {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 700; /* font-bold */
+            margin-bottom: 1rem; /* mb-4 */
+            color: #1f2937; /* gray-800 */
+        }
+        .results-score {
+            font-size: 1.25rem; /* text-xl */
+            margin-bottom: 1.5rem; /* mb-6 */
+            color: #374151; /* gray-700 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="quizApp" class="quiz-container">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-600">Quiz de Comandos Linux</h1>
+
+        <div id="quizArea">
+            <div class="progress-bar-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div id="questionNumber" class="text-sm text-gray-500 mb-2"></div>
+            <div id="questionContainer">
+                <p id="questionText" class="question-text"></p>
+                <div id="optionsContainer" class="space-y-3">
+                    </div>
+            </div>
+
+            <div id="feedbackArea" class="mt-6 mb-4 text-lg"></div>
+
+            <button id="submitBtn" class="btn btn-primary w-full mt-6">Verificar Resposta</button>
+            <button id="nextBtn" class="btn btn-primary w-full mt-4 hidden">Próxima Pergunta</button>
+        </div>
+
+        <div id="resultsArea" class="results-container hidden">
+            <h2 class="results-title">Quiz Concluído!</h2>
+            <p id="scoreText" class="results-score"></p>
+            <p id="summaryText" class="mb-6 text-gray-600"></p>
+            <button id="restartBtn" class="btn btn-secondary">Tentar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Navegação no sistema de arquivos
+            {
+                question: "Qual comando exibe o caminho completo do diretório atual?",
+                options: ["cd", "ls", "pwd", "mkdir"],
+                answer: "pwd",
+                explanation: "O comando `pwd` (print working directory) mostra o caminho absoluto do diretório em que você está."
+            },
+            {
+                question: "Para mudar para o diretório pessoal do usuário, qual comando pode ser usado?",
+                options: ["cd /root", "cd ~", "cd home", "cd ."],
+                answer: "cd ~",
+                explanation: "O comando `cd ~` ou simplesmente `cd` leva ao diretório pessoal do usuário logado."
+            },
+            {
+                question: "Como você sobe um nível na hierarquia de diretórios (vai para o diretório pai)?",
+                options: ["cd /", "cd ..", "cd up", "cd parent"],
+                answer: "cd ..",
+                explanation: "`cd ..` navega para o diretório pai do diretório atual."
+            },
+            {
+                question: "Qual comando lista os arquivos e pastas de um diretório?",
+                options: ["list", "dir", "show", "ls"],
+                answer: "ls",
+                explanation: "O comando `ls` (list) é usado para listar o conteúdo de um diretório."
+            },
+            {
+                question: "Qual opção do comando `ls` mostra uma listagem detalhada, incluindo permissões e dono?",
+                options: ["ls -a", "ls -R", "ls -l", "ls -h"],
+                answer: "ls -l",
+                explanation: "A opção `-l` do comando `ls` fornece um formato de listagem longa e detalhada."
+            },
+            {
+                question: "Para listar todos os arquivos, inclusive os ocultos (que começam com '.'), qual opção do `ls` você usaria?",
+                options: ["ls -hidden", "ls -all", "ls -a", "ls -."],
+                answer: "ls -a",
+                explanation: "A opção `-a` (all) do `ls` mostra todos os arquivos, incluindo os ocultos."
+            },
+            // Manipulação de arquivos e diretórios
+            {
+                question: "Qual comando é usado para criar um novo diretório?",
+                options: ["newdir", "crdir", "mkdir", "makedir"],
+                answer: "mkdir",
+                explanation: "O comando `mkdir` (make directory) é usado para criar novos diretórios."
+            },
+            {
+                question: "Como você criaria a estrutura de diretórios `/home/usuario/pasta1/pasta2/pasta3` de uma vez, mesmo que `pasta1` e `pasta2` não existam?",
+                options: ["mkdir /home/usuario/pasta1/pasta2/pasta3", "mkdir -all /home/usuario/pasta1/pasta2/pasta3", "mkdir -p /home/usuario/pasta1/pasta2/pasta3", "create -r /home/usuario/pasta1/pasta2/pasta3"],
+                answer: "mkdir -p /home/usuario/pasta1/pasta2/pasta3",
+                explanation: "A opção `-p` (parents) do `mkdir` cria os diretórios pais necessários no caminho, se eles não existirem."
+            },
+            {
+                question: "Qual comando cria um arquivo vazio?",
+                options: ["createfile", "mkfile", "touch", "newfile"],
+                answer: "touch",
+                explanation: "O comando `touch` pode ser usado para criar um arquivo vazio ou atualizar o timestamp de um arquivo existente."
+            },
+            {
+                question: "Para remover um diretório chamado `docs_antigos` e todo o seu conteúdo (subdiretórios e arquivos), qual comando você usaria?",
+                options: ["rmdir docs_antigos", "del docs_antigos -all", "rm -r docs_antigos", "delete docs_antigos /s"],
+                answer: "rm -r docs_antigos",
+                explanation: "O comando `rm -r` (remove recursive) é usado para remover diretórios e seu conteúdo."
+            },
+            {
+                question: "Qual comando é usado para copiar arquivos ou diretórios?",
+                options: ["copy", "cp", "duplicate", "clone"],
+                answer: "cp",
+                explanation: "O comando `cp` (copy) é usado para copiar arquivos e diretórios."
+            },
+            {
+                question: "Para copiar um diretório `origem` com toda a sua estrutura (subdiretórios, etc.) para um diretório `destino`, qual opção do `cp` é comumente usada?",
+                options: ["cp -all origem destino", "cp -s origem destino", "cp -r origem destino", "cp -d origem destino"],
+                answer: "cp -r origem destino",
+                explanation: "A opção `-r` (recursive) do `cp` copia diretórios recursivamente."
+            },
+            {
+                question: "Qual comando é usado para mover ou renomear arquivos e diretórios?",
+                options: ["move", "mv", "rename", "shift"],
+                answer: "mv",
+                explanation: "O comando `mv` (move) é usado tanto para mover arquivos/diretórios para outro local quanto para renomeá-los."
+            },
+            // Edição e visualização de conteúdo de arquivos
+            {
+                question: "Qual comando abre um arquivo em um editor de texto simples no terminal, criando o arquivo se ele não existir?",
+                options: ["edit", "vi", "nano", "gedit"],
+                answer: "nano",
+                explanation: "O `nano` é um editor de texto amigável para o terminal. Se o arquivo não existir, ele o cria."
+            },
+            {
+                question: "Qual comando exibe o conteúdo de um arquivo no terminal?",
+                options: ["display", "show", "type", "cat"],
+                answer: "cat",
+                explanation: "O comando `cat` (concatenate) é frequentemente usado para exibir o conteúdo de arquivos no terminal."
+            },
+            {
+                question: "Como você combinaria o conteúdo de `arq1.txt` e `arq2.txt` em um novo arquivo chamado `combinado.txt`?",
+                options: ["cat arq1.txt arq2.txt > combinado.txt", "join arq1.txt arq2.txt combinado.txt", "merge arq1.txt arq2.txt > combinado.txt", "cat arq1.txt + arq2.txt = combinado.txt"],
+                answer: "cat arq1.txt arq2.txt > combinado.txt",
+                explanation: "O `cat` pode concatenar arquivos, e o operador `>` redireciona a saída para um novo arquivo."
+            },
+            {
+                question: "Qual comando é usado para buscar por padrões em arquivos de texto?",
+                options: ["find", "search", "grep", "locate"],
+                answer: "grep",
+                explanation: "O comando `grep` (global regular expression print) é uma ferramenta poderosa para buscar padrões em texto."
+            },
+            {
+                question: "Para buscar a palavra 'erro' em todos os arquivos com extensão '.log' no diretório atual, qual comando seria mais apropriado?",
+                options: ["find erro *.log", "grep 'erro' *.log", "search 'erro' in *.log", "cat *.log | find 'erro'"],
+                answer: "grep 'erro' *.log",
+                explanation: "`grep 'erro' *.log` procura a string 'erro' em todos os arquivos que terminam com .log."
+            },
+            {
+                question: "Qual comando permite navegar pelo conteúdo de um arquivo de forma interativa, página por página?",
+                options: ["more", "cat -p", "less", "scroll"],
+                answer: "less",
+                explanation: "O comando `less` é um paginador que permite visualizar arquivos grandes de forma interativa."
+            },
+            {
+                question: "Para exibir as 5 primeiras linhas de um arquivo chamado `dados.txt`, qual comando você usaria?",
+                options: ["head -5 dados.txt", "top 5 dados.txt", "first -n 5 dados.txt", "cat dados.txt | head 5"],
+                answer: "head -5 dados.txt",
+                explanation: "O comando `head -n 5` (ou `head -5`) exibe as primeiras 5 linhas de um arquivo."
+            },
+            {
+                question: "Para exibir as 10 últimas linhas de um arquivo chamado `log.txt`, qual comando é usado?",
+                options: ["bottom log.txt", "tail log.txt", "last 10 log.txt", "end log.txt"],
+                answer: "tail log.txt",
+                explanation: "O comando `tail` exibe as últimas linhas de um arquivo (por padrão, as 10 últimas)."
+            },
+            // Permissões de arquivos
+            {
+                question: "No sistema de permissões do Linux, o que significa 'User' (usuário)?",
+                options: ["Qualquer usuário do sistema", "O administrador do sistema (root)", "O dono do arquivo", "Um grupo de usuários"],
+                answer: "O dono do arquivo",
+                explanation: "'User' (u) refere-se ao proprietário (dono) do arquivo ou diretório."
+            },
+            {
+                question: "Quais são os três tipos básicos de permissões em arquivos Linux?",
+                options: ["Abrir, Fechar, Salvar", "Ler, Escrever, Executar", "Copiar, Mover, Deletar", "Visualizar, Editar, Compartilhar"],
+                answer: "Ler, Escrever, Executar",
+                explanation: "As permissões são `r` (read/leitura), `w` (write/escrita) e `x` (execute/execução)."
+            },
+            {
+                question: "Qual o valor numérico da permissão de 'leitura' (read)?",
+                options: ["1", "2", "4", "7"],
+                answer: "4",
+                explanation: "A permissão de leitura (r) tem o valor numérico 4."
+            },
+            {
+                question: "Qual o valor numérico da permissão de 'escrita' (write)?",
+                options: ["1", "2", "4", "7"],
+                answer: "2",
+                explanation: "A permissão de escrita (w) tem o valor numérico 2."
+            },
+            {
+                question: "Qual o valor numérico da permissão de 'execução' (execute)?",
+                options: ["1", "2", "4", "7"],
+                answer: "1",
+                explanation: "A permissão de execução (x) tem o valor numérico 1."
+            },
+            {
+                question: "Se um arquivo tem a permissão `-rw-r--r--`, qual permissão o 'dono' (user) possui?",
+                options: ["Apenas leitura", "Leitura e escrita", "Leitura e execução", "Leitura, escrita e execução"],
+                answer: "Leitura e escrita",
+                explanation: "O primeiro trio `rw-` indica que o dono tem permissão de leitura (r) e escrita (w)."
+            },
+            {
+                question: "Qual comando é usado para alterar as permissões de um arquivo ou diretório?",
+                options: ["chperm", "setperm", "chmod", "chown"],
+                answer: "chmod",
+                explanation: "O comando `chmod` (change mode) é usado para modificar as permissões."
+            },
+            {
+                question: "Como você adicionaria permissão de execução para o 'usuário' (dono) do arquivo `script.sh`?",
+                options: ["chmod +x script.sh", "chmod u+x script.sh", "chmod own+x script.sh", "chmod script.sh +x user"],
+                answer: "chmod u+x script.sh",
+                explanation: "`chmod u+x script.sh` adiciona (+) a permissão de execução (x) para o usuário/dono (u)."
+            },
+            {
+                question: "O que o comando `chmod 755 script.sh` faz?",
+                options: ["Dá todas as permissões para todos", "Dá permissão total para o dono, e leitura/execução para grupo e outros", "Remove todas as permissões", "Dá permissão de leitura para todos"],
+                answer: "Dá permissão total para o dono, e leitura/execução para grupo e outros",
+                explanation: "7 (rwx) para o dono, 5 (r-x) para o grupo, e 5 (r-x) para outros."
+            },
+            {
+                question: "Qual comando é usado para alterar o dono e/ou grupo de um arquivo?",
+                options: ["chown", "chgrp", "chuser", "setowner"],
+                answer: "chown",
+                explanation: "O comando `chown` (change owner) é usado para mudar o proprietário e/ou grupo de um arquivo/diretório."
+            },
+            {
+                question: "Como você mudaria o dono do arquivo `relatorio.txt` para `ana` e o grupo para `vendas`?",
+                options: ["chown ana vendas relatorio.txt", "chown relatorio.txt ana:vendas", "chown ana:vendas relatorio.txt", "setowner ana:vendas relatorio.txt"],
+                answer: "chown ana:vendas relatorio.txt",
+                explanation: "A sintaxe é `chown novo_dono:novo_grupo arquivo`."
+            }
+        ];
+
+        const quizApp = document.getElementById('quizApp');
+        const quizArea = document.getElementById('quizArea');
+        const resultsArea = document.getElementById('resultsArea');
+        const questionContainer = document.getElementById('questionContainer');
+        const questionTextEl = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedbackArea = document.getElementById('feedbackArea');
+        const submitBtn = document.getElementById('submitBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const scoreTextEl = document.getElementById('scoreText');
+        const summaryTextEl = document.getElementById('summaryText');
+        const restartBtn = document.getElementById('restartBtn');
+        const progressBar = document.getElementById('progressBar');
+        const questionNumberEl = document.getElementById('questionNumber');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = []; // Para armazenar as questões embaralhadas
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startQuiz() {
+            questions = [...quizData]; // Copia os dados originais
+            shuffleArray(questions); // Embaralha as questões
+            currentQuestionIndex = 0;
+            score = 0;
+            resultsArea.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+            submitBtn.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            feedbackArea.textContent = '';
+            feedbackArea.className = 'mt-6 mb-4 text-lg'; // Reset feedback class
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const currentQuestion = questions[currentQuestionIndex];
+                questionTextEl.textContent = currentQuestion.question;
+                optionsContainer.innerHTML = ''; // Limpa opções anteriores
+
+                // Embaralha as opções da pergunta atual
+                const shuffledOptions = [...currentQuestion.options];
+                shuffleArray(shuffledOptions);
+
+                shuffledOptions.forEach((option, index) => {
+                    const optionId = `option${index}`;
+                    const optionDiv = document.createElement('div');
+                    optionDiv.innerHTML = `
+                        <input type="radio" name="option" value="${option}" id="${optionId}" class="sr-only option-input">
+                        <label for="${optionId}" class="option-label">${option}</label>
+                    `;
+                    optionsContainer.appendChild(optionDiv);
+                });
+
+                updateProgressBar();
+                questionNumberEl.textContent = `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                submitBtn.textContent = 'Verificar Resposta';
+                feedbackArea.textContent = '';
+                feedbackArea.className = 'mt-6 mb-4 text-lg';
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgressBar() {
+            const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            // progressBar.textContent = `${Math.round(progressPercentage)}%`; // Opcional: mostrar porcentagem na barra
+        }
+
+
+        function handleSubmit() {
+            const selectedOptionInput = document.querySelector('input[name="option"]:checked');
+            if (!selectedOptionInput) {
+                feedbackArea.textContent = 'Por favor, selecione uma opção.';
+                feedbackArea.className = 'mt-6 mb-4 text-lg text-yellow-600 font-medium';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const userAnswer = selectedOptionInput.value;
+            const correctAnswer = questions[currentQuestionIndex].answer;
+            const explanation = questions[currentQuestionIndex].explanation;
+
+            if (userAnswer === correctAnswer) {
+                score++;
+                feedbackArea.textContent = 'Correto! ' + (explanation || ''); // Emoji removido
+                feedbackArea.className = 'mt-6 mb-4 text-lg feedback-correct';
+                selectedOptionInput.nextElementSibling.classList.add('!bg-green-100', '!border-green-500');
+            } else {
+                feedbackArea.textContent = `Incorreto. A resposta correta era: ${correctAnswer}. ` + (explanation || ''); // Emoji removido
+                feedbackArea.className = 'mt-6 mb-4 text-lg feedback-incorrect';
+                selectedOptionInput.nextElementSibling.classList.add('!bg-red-100', '!border-red-500');
+                // Destacar a correta
+                const correctRadio = document.querySelector(`input[name="option"][value="${correctAnswer}"]`);
+                if (correctRadio) {
+                    correctRadio.nextElementSibling.classList.add('!bg-green-100', '!border-green-500', 'font-bold');
+                }
+            }
+
+            // Desabilitar todos os inputs após a resposta
+            document.querySelectorAll('input[name="option"]').forEach(input => input.disabled = true);
+
+            submitBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.textContent = 'Ver Resultados';
+            } else {
+                nextBtn.textContent = 'Próxima Pergunta';
+            }
+        }
+
+        function handleNext() {
+            currentQuestionIndex++;
+             if (currentQuestionIndex < questions.length) {
+                feedbackArea.textContent = '';
+                feedbackArea.className = 'mt-6 mb-4 text-lg';
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizArea.classList.add('hidden');
+            resultsArea.classList.remove('hidden');
+            progressBar.style.width = '100%'; // Completa a barra no final
+            // progressBar.textContent = '100%';
+
+            const percentage = Math.round((score / questions.length) * 100);
+            scoreTextEl.textContent = `Sua pontuação: ${score} de ${questions.length} (${percentage}%)`;
+
+            let summaryMsg = "";
+            if (percentage === 100) {
+                summaryMsg = "Excelente! Você acertou todas!"; // Emoji removido
+            } else if (percentage >= 75) {
+                summaryMsg = "Muito bom! Quase lá!";
+            } else if (percentage >= 50) {
+                summaryMsg = "Bom esforço! Continue estudando os comandos.";
+            } else {
+                summaryMsg = "Não desanime! Revise o material e tente novamente.";
+            }
+            summaryTextEl.textContent = summaryMsg;
+        }
+
+        submitBtn.addEventListener('click', handleSubmit);
+        nextBtn.addEventListener('click', handleNext);
+        restartBtn.addEventListener('click', startQuiz);
+
+        // Iniciar o quiz quando a página carregar
+        startQuiz();
+    </script>
+
+</body>
+</html>
