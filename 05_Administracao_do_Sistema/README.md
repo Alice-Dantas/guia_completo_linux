@@ -6,9 +6,9 @@ Este módulo tem como objetivo aprofundar os conhecimentos na administração de
 ## Conteúdo
 
 ### 🔸 Criação e Gerenciamento de Usuários e Grupos
+- Sobre o sudo.
 - Comandos para criar, modificar e remover usuários e grupos.
 - Permissões e hierarquia de grupos.
-- Gerenciamento de privilégios.
 
 ### 🔸 Gerenciamento de Processos
 - Monitoramento em tempo real (`top`, `htop`).
