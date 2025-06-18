@@ -18,6 +18,6 @@
 ---
 
 - Sempre que quiser que o caractere especial seja interpretado **literalmente**, use uma **barra invertida (`\`)** antes dele.
-- Atenção: a própria barra invertida (`\`) também é um caractere especial e precisa ser escapada como `\\`.
+- Atenção: a própria barra invertida também é um caractere especial e precisa ser escapada como `\\`
 
 ---
